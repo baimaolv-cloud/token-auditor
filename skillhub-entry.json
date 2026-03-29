@@ -1,0 +1,26 @@
+{
+  "slug": "token-auditor",
+  "name": "TOKEN Auditor",
+  "description": "TOKEN娑堣€楀璁″伐鍏枫€傜粺璁″綋鏃OKEN娑堣€桾OP3浠诲姟锛岀敓鎴愬璁℃姤鍛娿€傛敮鎸佷换鍔″垎绫伙紙DEBUG/REPORT/ROUTINE锛夈€佷紭鍖栧缓璁€佽秼鍔垮姣斻€傛瘡鏃ヨ嚜鍔ㄧ敓鎴愭棩鎶ワ紝甯姪鍙戠幇TOKEN娑堣€楃儹鐐瑰苟浼樺寲銆傚叧閿瘝锛歍OKEN, 瀹¤, 鎴愭湰, 缁熻, 鎶ュ憡, TOP3, 浼樺寲銆?,
+  "version": "1.0.0",
+  "homepage": "https://github.com/baimaolv-cloud/token-auditor",
+  "downloads": 0,
+  "stars": 0,
+  "score": 10,
+  "categories": [
+    "AI澧炲己",
+    "DevOps"
+  ],
+  "author": "XiaoXia",
+  "repository": "https://github.com/baimaolv-cloud/token-auditor.git",
+  "install_command": "git clone https://github.com/baimaolv-cloud/token-auditor.git",
+  "keywords": [
+    "TOKEN",
+    "瀹¤",
+    "鎴愭湰",
+    "缁熻",
+    "鎶ュ憡",
+    "TOP3",
+    "浼樺寲"
+  ]
+}
