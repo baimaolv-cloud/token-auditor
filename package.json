@@ -1,0 +1,49 @@
+{
+  "name": "token-auditor",
+  "version": "1.0.0",
+  "description": "TOKEN 娑堣€楀璁″伐鍏?- 缁熻褰撴棩 TOKEN 娑堣€?TOP3 浠诲姟锛岀敓鎴愬璁℃姤鍛?,
+  "author": "XiaoXia",
+  "license": "MIT",
+  "keywords": [
+    "TOKEN",
+    "瀹¤",
+    "鎴愭湰",
+    "缁熻",
+    "鎶ュ憡",
+    "TOP3",
+    "optimization"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/baimaolv-cloud/token-auditor.git"
+  },
+  "homepage": "https://github.com/baimaolv-cloud/token-auditor#readme",
+  "bugs": {
+    "url": "https://github.com/baimaolv-cloud/token-auditor/issues"
+  },
+  "skills": {
+    "category": "utility",
+    "priority": "normal",
+    "triggers": [
+      "TOKEN 娑堣€?,
+      "鎴愭湰缁熻",
+      "瀹¤鎶ュ憡",
+      "TOP3 浠诲姟",
+      "娑堣€楁帓琛?
+    ]
+  },
+  "scripts": {
+    "log": "python scripts/log_token.py",
+    "report": "python scripts/log_token.py --report",
+    "summary": "python scripts/log_token.py --summary"
+  },
+  "engines": {
+    "python": ">=3.8"
+  },
+  "dependencies": [],
+  "files": [
+    "SKILL.md",
+    "README.md",
+    "scripts/log_token.py"
+  ]
+}
