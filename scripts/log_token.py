@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-TOKEN 瀹¤鏃ュ織璁板綍宸ュ叿
+TOKEN 审计日志记录工具
 
-鐢ㄦ硶锛?  python log_token.py --task "qqbrowser-skill 淇" --type DEBUG --in 3200 --out 4100 --cached 153000
-  python log_token.py --report                    # 鐢熸垚褰撴棩 TOP3 鎶ュ憡
-  python log_token.py --summary                   # 鏄剧ず褰撴棩鎽樿
+用法:
+  python log_token.py --task "qqbrowser-skill 修复" --type DEBUG --in 3200 --out 4100 --cached 153000
+  python log_token.py --report                    # 生成当日 TOP3 报告
+  python log_token.py --summary                   # 显示当日摘要
 """
 
 import argparse
@@ -15,22 +16,22 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-# 鏃ュ織鐩綍
+# 日志目录
 LOG_DIR = Path.home() / ".qclaw" / "workspace" / "logs" / "token-audit"
 ARCHIVE_DIR = LOG_DIR / "archive"
 
 def ensure_dirs():
-    """纭繚鏃ュ織鐩綍瀛樺湪"""
+    """确保日志目录存在"""
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
 
 def get_today_log() -> Path:
-    """鑾峰彇褰撴棩鏃ュ織鏂囦欢璺緞"""
+    """获取当日日志文件路径"""
     today = datetime.now().strftime("%Y-%m-%d")
     return LOG_DIR / f"{today}.jsonl"
 
 def get_today_summary() -> Path:
-    """鑾峰彇褰撴棩鎽樿鏂囦欢璺緞"""
+    """获取当日摘要文件路径"""
     today = datetime.now().strftime("%Y-%m-%d")
     return LOG_DIR / f"{today}-summary.md"
 
@@ -44,7 +45,7 @@ def log_token(
     session_id: Optional[str] = None,
     details: Optional[dict] = None
 ):
-    """璁板綍 TOKEN 娑堣€?""
+    """记录 TOKEN 消耗"""
     ensure_dirs()
     
     log_entry = {
@@ -68,31 +69,32 @@ def log_token(
     return log_entry
 
 def generate_report():
-    """鐢熸垚褰撴棩 TOP3 鎶ュ憡"""
+    """生成当日 TOP3 报告"""
     ensure_dirs()
     
     log_file = get_today_log()
     if not log_file.exists():
-        print("鉂?褰撴棩鏃?TOKEN 璁板綍")
+        print("[WARN] 当日无 TOKEN 记录")
         return
     
-    # 璇诲彇鎵€鏈夎褰?    records = []
+    # 读取所有记录
+    records = []
     with open(log_file, "r", encoding="utf-8") as f:
         for line in f:
             if line.strip():
                 records.append(json.loads(line))
     
     if not records:
-        print("鉂?褰撴棩鏃?TOKEN 璁板綍")
+        print("[WARN] 当日无 TOKEN 记录")
         return
     
-    # 缁熻
+    # 统计
     total_in = sum(r["tokens_in"] for r in records)
     total_out = sum(r["tokens_out"] for r in records)
     total_cached = sum(r["tokens_cached"] for r in records)
     total_cost = sum(r["cost_usd"] for r in records)
     
-    # 鎸?task_name 鍒嗙粍缁熻
+    # 按 task_name 分组统计
     task_stats = {}
     for r in records:
         name = r["task_name"]
@@ -113,36 +115,39 @@ def generate_report():
         task_stats[name]["cost_usd"] += r["cost_usd"]
         task_stats[name]["details"].append(r["details"])
     
-    # 鎺掑簭 TOP3
+    # 排序 TOP3
     top3 = sorted(
         task_stats.items(),
         key=lambda x: x[1]["tokens_in"] + x[1]["tokens_out"],
         reverse=True
     )[:3]
     
-    # 鐢熸垚鎶ュ憡
+    # 生成报告
     today = datetime.now().strftime("%Y-%m-%d")
-    report = f"""# TOKEN 瀹¤鏃ユ姤 - {today}
+    report = f"""# TOKEN 审计日报 - {today}
 
-## 馃搳 鎬昏
+## 总览
 
-- **鎬绘秷鑰?*锛歿total_in + total_out}K TOKEN ({total_in}K in + {total_out}K out)
-- **缂撳瓨鍒╃敤**锛歿total_cached}K TOKEN
-- **棰勪及鎴愭湰**锛?{total_cost:.4f}
-- **浠诲姟鏁伴噺**锛歿len(task_stats)} 涓?
-## 馃敐 TOP3 娑堣€椾换鍔?
+- **总消耗**：{total_in + total_out}K TOKEN ({total_in}K in + {total_out}K out)
+- **缓存利用**：{total_cached}K TOKEN
+- **预估成本**：${total_cost:.4f}
+- **任务数量**：{len(task_stats)} 个
+
+## TOP3 消耗任务
 """
     
     for i, (task_name, stats) in enumerate(top3, 1):
         total_tokens = stats["tokens_in"] + stats["tokens_out"]
         percentage = (total_tokens / (total_in + total_out) * 100) if (total_in + total_out) > 0 else 0
         
-        report += f"""### {i}锔忊儯 {task_name}
-- **娑堣€?*锛歿total_tokens}K TOKEN ({percentage:.1f}%)
-- **绫诲瀷**锛歿stats["type"]}
-- **娆℃暟**锛歿stats["count"]} 娆?- **璇︽儏**锛?"""
+        report += f"""### {i}. {task_name}
+- **消耗**：{total_tokens}K TOKEN ({percentage:.1f}%)
+- **类型**：{stats["type"]}
+- **次数**：{stats["count"]} 次
+- **详情**：
+"""
         
-        # 姹囨€?details
+        # 汇总 details
         all_details = {}
         for d in stats["details"]:
             for k, v in d.items():
@@ -151,21 +156,21 @@ def generate_report():
                 all_details[k] += v if isinstance(v, (int, float)) else 1
         
         for k, v in all_details.items():
-            report += f"  - {k}锛歿v} 娆n"
+            report += f"  - {k}：{v} 次\n"
         
         report += "\n"
     
-    report += f"""## 馃挕 浼樺寲寤鸿
+    report += f"""## 优化建议
 
-_鏍规嵁浠婃棩娑堣€楁儏鍐碉紝寤鸿鍏虫敞 TOP1 浠诲姟鐨?TOKEN 浼樺寲_
+_根据今日消耗情况，建议关注 TOP1 任务的 TOKEN 优化_
 
 ---
 
-*鐢熸垚鏃堕棿锛歿datetime.now().strftime("%Y-%m-%d %H:%M")}*
-*绱浠诲姟锛歿len(records)} 鏉¤褰?
+*生成时间：{datetime.now().strftime("%Y-%m-%d %H:%M")}*
+*累计任务：{len(records)} 条记录*
 """
     
-    # 鍐欏叆鎶ュ憡
+    # 写入报告
     summary_file = get_today_summary()
     with open(summary_file, "w", encoding="utf-8") as f:
         f.write(report)
@@ -174,10 +179,10 @@ _鏍规嵁浠婃棩娑堣€楁儏鍐碉紝寤鸿鍏虫敞 TOP1 浠诲姟鐨?
     print(report)
 
 def show_summary():
-    """鏄剧ず褰撴棩鎽樿"""
+    """显示当日摘要"""
     log_file = get_today_log()
     if not log_file.exists():
-        print("鉂?褰撴棩鏃?TOKEN 璁板綍")
+        print("[WARN] 当日无 TOKEN 记录")
         return
     
     records = []
@@ -187,7 +192,7 @@ def show_summary():
                 records.append(json.loads(line))
     
     if not records:
-        print("鉂?褰撴棩鏃?TOKEN 璁板綍")
+        print("[WARN] 当日无 TOKEN 记录")
         return
     
     total_in = sum(r["tokens_in"] for r in records)
@@ -195,25 +200,26 @@ def show_summary():
     total_cached = sum(r["tokens_cached"] for r in records)
     
     print(f"""
-馃搳 浠婃棩 TOKEN 娑堣€楁憳瑕?鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣
-杈撳叆 TOKEN锛歿total_in}K
-杈撳嚭 TOKEN锛歿total_out}K
-缂撳瓨 TOKEN锛歿total_cached}K
-鎬绘秷鑰楋細{total_in + total_out}K
-浠诲姟鏁伴噺锛歿len(records)} 涓?鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣鈹佲攣
+今日 TOKEN 消耗摘要 ==========================================
+输入 TOKEN：{total_in}K
+输出 TOKEN：{total_out}K
+缓存 TOKEN：{total_cached}K
+总消耗：{total_in + total_out}K
+任务数量：{len(records)} 个
+=============================================================
 """)
 
 def main():
-    parser = argparse.ArgumentParser(description="TOKEN 瀹¤宸ュ叿")
-    parser.add_argument("--task", help="浠诲姟鍚嶇О")
-    parser.add_argument("--type", default="UNKNOWN", help="浠诲姟绫诲瀷 (DEBUG/CODE/REPORT/ROUTINE)")
-    parser.add_argument("--in", dest="tokens_in", type=int, default=0, help="杈撳叆 TOKEN")
-    parser.add_argument("--out", dest="tokens_out", type=int, default=0, help="杈撳嚭 TOKEN")
-    parser.add_argument("--cached", dest="tokens_cached", type=int, default=0, help="缂撳瓨 TOKEN")
-    parser.add_argument("--cost", dest="cost_usd", type=float, default=0.0, help="鎴愭湰 USD")
-    parser.add_argument("--session", dest="session_id", help="浼氳瘽 ID")
-    parser.add_argument("--report", action="store_true", help="鐢熸垚鎶ュ憡")
-    parser.add_argument("--summary", action="store_true", help="鏄剧ず鎽樿")
+    parser = argparse.ArgumentParser(description="TOKEN 审计工具")
+    parser.add_argument("--task", help="任务名称")
+    parser.add_argument("--type", default="UNKNOWN", help="任务类型 (DEBUG/CODE/REPORT/ROUTINE)")
+    parser.add_argument("--in", dest="tokens_in", type=int, default=0, help="输入 TOKEN")
+    parser.add_argument("--out", dest="tokens_out", type=int, default=0, help="输出 TOKEN")
+    parser.add_argument("--cached", dest="tokens_cached", type=int, default=0, help="缓存 TOKEN")
+    parser.add_argument("--cost", dest="cost_usd", type=float, default=0.0, help="成本 USD")
+    parser.add_argument("--session", dest="session_id", help="会话 ID")
+    parser.add_argument("--report", action="store_true", help="生成报告")
+    parser.add_argument("--summary", action="store_true", help="显示摘要")
     
     args = parser.parse_args()
     

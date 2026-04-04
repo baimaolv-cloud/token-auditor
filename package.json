@@ -1,15 +1,15 @@
 {
   "name": "token-auditor",
-  "version": "1.0.0",
-  "description": "TOKEN 娑堣€楀璁″伐鍏?- 缁熻褰撴棩 TOKEN 娑堣€?TOP3 浠诲姟锛岀敓鎴愬璁℃姤鍛?,
+  "version": "1.0.1",
+  "description": "TOKEN 消耗审计工具 - 统计当日 TOKEN 消耗 TOP3 任务，生成审计报告",
   "author": "XiaoXia",
   "license": "MIT",
   "keywords": [
     "TOKEN",
-    "瀹¤",
-    "鎴愭湰",
-    "缁熻",
-    "鎶ュ憡",
+    "审计",
+    "成本",
+    "统计",
+    "报告",
     "TOP3",
     "optimization"
   ],
@@ -25,11 +25,11 @@
     "category": "utility",
     "priority": "normal",
     "triggers": [
-      "TOKEN 娑堣€?,
-      "鎴愭湰缁熻",
-      "瀹¤鎶ュ憡",
-      "TOP3 浠诲姟",
-      "娑堣€楁帓琛?
+      "TOKEN 消耗",
+      "成本统计",
+      "审计报告",
+      "TOP3 任务",
+      "消耗排行"
     ]
   },
   "scripts": {
